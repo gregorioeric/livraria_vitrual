@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
 
 class UserController {
@@ -21,9 +22,9 @@ class UserController {
 
   async getUserById(req, res) {
     try {
-      const { id } = req.params;
+      const { user_id } = req.params;
 
-      const userById = await userModel.selectUserById(id);
+      const userById = await userModel.selectUserById(user_id);
 
       if (userById.length === 0) {
         return res.status(404).json({
@@ -45,9 +46,9 @@ class UserController {
 
       const [userByEmail] = await userModel.selectUserByEmail(user_email);
 
-      if (userByEmail) {
-        return res.status(400).json({
-          error: "Este email já está cadastrado no sistema!",
+      if (!userByEmail) {
+        return res.status(404).json({
+          error: "Usuário não encontrado!",
         });
       }
 
@@ -61,6 +62,15 @@ class UserController {
 
   async createUser(req, res) {
     try {
+      const {
+        user_name,
+        user_email,
+        user_password,
+        user_phone,
+        role_id,
+        user_status,
+      } = req.body;
+
       const [existsUser] = await userModel.selectUserByEmail(
         req.body.user_email,
       );
@@ -71,7 +81,16 @@ class UserController {
         });
       }
 
-      const newUser = await userModel.insertUser(req.body);
+      const hashedPassword = await bcrypt.hash(user_password, 10);
+
+      const newUser = await userModel.insertUser({
+        user_name,
+        user_email,
+        user_password: hashedPassword,
+        user_phone,
+        role_id,
+        user_status,
+      });
 
       if (newUser.affectedRows > 0) {
         return res.status(200).json({
@@ -85,31 +104,88 @@ class UserController {
     }
   }
 
-  //   async createUser(req, res) {
-  //     try {
-  //       const {
-  //         user_name,
-  //         user_email,
-  //         user_password,
-  //         user_phone,
-  //         role_id,
-  //         user_status,
-  //       } = req.body;
+  async updateUser(req, res) {
+    try {
+      const { user_id } = req.params;
+      const {
+        user_name,
+        user_email,
+        user_password,
+        user_phone,
+        role_id,
+        user_status,
+      } = req.body;
 
-  //       const newUser = await userModel.insertUser({
-  //         user_name,
-  //         user_email,
-  //         user_password,
-  //         user_phone,
-  //         role_id,
-  //         user_status,
-  //       });
+      const [existsUser] = await userModel.selectUserByEmail(
+        user_email,
+        user_id,
+      );
 
-  //       return res.status(201).json(newUser);
-  //     } catch (err) {
-  //       return res.status(500).json({
-  //         error: "Erro ao inserir usuário!",
-  //       });
-  //     }
-  //   }
+      if (existsUser) {
+        return res.status(400).json({
+          error: "Este email já está cadastrado no sistema!",
+        });
+      }
+
+      const [existsPassword] = await userModel.selectUserById(user_id);
+
+      if (user_password) {
+        const comperingPassword = await bcrypt.compare(
+          user_password,
+          existsPassword.user_password,
+        );
+
+        if (comperingPassword) {
+          const result = userModel.updateUser(user_id, req.body);
+
+          if (result.affectedRows > 0) {
+            return res.status(200).json({
+              success: "Usuário atualizado com sucesso!",
+            });
+          }
+        }
+
+        const hashedPassword = await bcrypt.hash(user_password, 10);
+
+        const result = await userModel.updateUser(user_id, {
+          user_name,
+          user_email,
+          user_password: hashedPassword,
+          user_phone,
+          role_id,
+          user_status,
+        });
+
+        if (result.affectedRows > 0) {
+          return res.status(200).json({
+            success: "Usuário atualizado com sucesso!",
+          });
+        }
+      }
+    } catch (error) {
+      return res.status(500).json({
+        error: "Erro ao atualizar usuário!",
+      });
+    }
+  }
+
+  async deleteUser(req, res) {
+    try {
+      const { user_id } = req.params;
+
+      const result = await userModel.deleteUser(user_id);
+
+      if (result.affectedRows > 0) {
+        return res.status(201).json({
+          success: "Usuário deletado com sucesso!",
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        error: "Erro ao atualizar usuário!",
+      });
+    }
+  }
 }
+
+export default new UserController();

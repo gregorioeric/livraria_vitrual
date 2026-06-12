@@ -1,4 +1,4 @@
-import pool from "../db/conn.js";
+import pool from "../database/database.js";
 
 class ClientModel {
   async selectAllClients() {

@@ -1,4 +1,4 @@
-import pool from "../db/conn.js";
+import pool from "../database/database.js";
 
 class BookModel {
   async showBooks() {
@@ -10,14 +10,15 @@ class BookModel {
   async findBookByName(bookName) {
     const [row] = await pool.execute(
       "SELECT * FROM livros WHERE titulo LIKE ?;",
-      [`%${bookName}%`]
+      [`%${bookName}%`],
     );
 
     return row;
   }
 
   async createBook(bookData) {
-    const { titulo, autor, ano_publicacao, preco, id_editora, id_categoria } = bookData;
+    const { titulo, autor, ano_publicacao, preco, id_editora, id_categoria } =
+      bookData;
     const [row] = await pool.execute(
       `INSET INTO livros 
           (titulo, autor, ano_publicacao, preco, id_editora, id_categoria)
@@ -30,7 +31,8 @@ class BookModel {
   }
 
   async updateBook(id, bookData) {
-    const { titulo, autor, ano_publicacao, preco, id_editora, id_categoria } = bookData;
+    const { titulo, autor, ano_publicacao, preco, id_editora, id_categoria } =
+      bookData;
     const [row] = await pool.execute(
       `UPDATE livros SET 
             titulo = ?,
@@ -47,10 +49,9 @@ class BookModel {
   }
 
   async deleteBook(id) {
-    const [row] = await pool.execute(
-      "DELETE FROM livros WHERE id_livro = ?",
-      [id]
-    );
+    const [row] = await pool.execute("DELETE FROM livros WHERE id_livro = ?", [
+      id,
+    ]);
 
     return row;
   }
