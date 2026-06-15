@@ -2,7 +2,7 @@ import pool from "../database/database.js";
 
 class UserModel {
   async selectAllUsers() {
-    const query = `SELECT * FROM users`;
+    const query = `SELECT * FROM users ORDER BY user_id;`;
 
     const [rows] = await pool.execute(query);
     return rows;

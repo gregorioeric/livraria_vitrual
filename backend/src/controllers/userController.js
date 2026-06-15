@@ -129,18 +129,29 @@ class UserController {
 
       const [existsPassword] = await userModel.selectUserById(user_id);
 
-      if (user_password) {
+      if (existsPassword) {
         const comperingPassword = await bcrypt.compare(
           user_password,
           existsPassword.user_password,
         );
 
+        console.log("comperingPassword", comperingPassword);
+
         if (comperingPassword) {
-          const result = userModel.updateUser(user_id, req.body);
+          const result = await userModel.updateUser(user_id, {
+            user_name,
+            user_email,
+            user_password: existsPassword.user_password,
+            user_phone,
+            role_id,
+            user_status,
+          });
+
+          console.log("Dentro comperingPassword", result);
 
           if (result.affectedRows > 0) {
             return res.status(200).json({
-              success: "Usuário atualizado com sucesso!",
+              success: "Usuário atualizado com sucesso dentro do compering!",
             });
           }
         }
@@ -155,6 +166,8 @@ class UserController {
           role_id,
           user_status,
         });
+
+        console.log("result depois do if", result);
 
         if (result.affectedRows > 0) {
           return res.status(200).json({
