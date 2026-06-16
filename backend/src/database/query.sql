@@ -1,5 +1,13 @@
 USE bd_livrariaonline;
 
+CREATE TABLE tokens (
+    token_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token TEXT NOT NULL,
+    expires_at DATETIME NOT NULL,
+    Foreign Key (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+);
+
 CREATE TABLE roles (
     role_id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE
