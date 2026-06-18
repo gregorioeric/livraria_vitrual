@@ -53,9 +53,29 @@ class AuthLoginController {
       maxAge: 604800000,
     });
 
+    console.log(res);
+
     return res.json({
       success: "Login realizado com sucesso!",
       accessToken,
+    });
+  }
+
+  async logout(req, res) {
+    const refreshToken = req.cookies?.refreshToken;
+    console.log(req.cookies);
+    const deleteToken = await tokenModel.deleteToken(refreshToken);
+
+    // res.clearCookie("refreshToken");
+
+    if (deleteToken.affectedRows > 0) {
+      return res.status(201).json({
+        success: "Logout efetuadocom sucesso!",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Erro ao deletar token",
     });
   }
 }

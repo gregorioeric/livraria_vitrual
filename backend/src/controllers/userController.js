@@ -135,8 +135,6 @@ class UserController {
           existsPassword.user_password,
         );
 
-        console.log("comperingPassword", comperingPassword);
-
         if (comperingPassword) {
           const result = await userModel.updateUser(user_id, {
             user_name,
