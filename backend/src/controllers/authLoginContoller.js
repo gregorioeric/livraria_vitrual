@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import generateTokens from "../utils/generateTokens.js";
 import tokenModel from "../models/tokenModel.js";
 import userModel from "../models/userModel.js";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -48,12 +49,11 @@ class AuthLoginController {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.COOKIE_SECRET,
+      // secure: process.env.COOKIE_SECRET,
+      secure: false,
       sameSite: "strict",
       maxAge: 604800000,
     });
-
-    console.log(res);
 
     return res.json({
       success: "Login realizado com sucesso!",
@@ -61,12 +61,56 @@ class AuthLoginController {
     });
   }
 
+  async refreshToken (req, res) {
+    const rfToken = req.cookies.refreshToken;
+
+    if (!rfToken) {
+      return res.status(401).json({
+        error: "Token não fornecido!"
+      })
+    }
+
+    const [tokenExists] = await tokenModel.selectByToken(rfToken);
+
+    if (!tokenExists) {
+      return res.status(401).json({
+        error: "token inválido!"
+      })
+    }
+
+    jwt.verify(rfToken, process.env.REFRESH_TOKEN_SECRET,
+      async (error, usuarioDecodificado) => {
+        if (error) {
+          return res.status(403).json({
+            error: "Token inválido ou expirado!"
+          })
+        }
+
+        await tokenModel.deleteToken(rfToken);
+
+        const {
+          iat, exp, ...userData
+        } = usuarioDecodificado;
+
+        const accessToken = generateTokens.generateAccessToken(userData);
+        const newRefreshToken = generateTokens.generateRefreshToken(userData);
+
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        
+        const savedToken = await tokenModel.createToken({
+          user_id: 
+        })
+      }
+    )
+  }
+
   async logout(req, res) {
     const refreshToken = req.cookies?.refreshToken;
-    console.log(req.cookies);
+    console.log(req);
+
     const deleteToken = await tokenModel.deleteToken(refreshToken);
 
-    // res.clearCookie("refreshToken");
+    res.clearCookie("refreshToken");
 
     if (deleteToken.affectedRows > 0) {
       return res.status(201).json({
