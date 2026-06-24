@@ -5,5 +5,6 @@ const loginRoute = express.Router();
 
 loginRoute.post("/login", authLoginContoller.login);
 loginRoute.post("/logout", authLoginContoller.logout);
+loginRoute.post("/refresh", authLoginContoller.refreshToken);
 
 export default loginRoute;

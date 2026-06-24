@@ -61,47 +61,68 @@ class AuthLoginController {
     });
   }
 
-  async refreshToken (req, res) {
+  async refreshToken(req, res) {
     const rfToken = req.cookies.refreshToken;
+    console.log(req);
 
     if (!rfToken) {
       return res.status(401).json({
-        error: "Token não fornecido!"
-      })
+        error: "Token não fornecido!",
+      });
     }
 
     const [tokenExists] = await tokenModel.selectByToken(rfToken);
 
     if (!tokenExists) {
       return res.status(401).json({
-        error: "token inválido!"
-      })
+        error: "token inválido!",
+      });
     }
 
-    jwt.verify(rfToken, process.env.REFRESH_TOKEN_SECRET,
+    jwt.verify(
+      rfToken,
+      process.env.REFRESH_TOKEN_SECRET,
       async (error, usuarioDecodificado) => {
         if (error) {
           return res.status(403).json({
-            error: "Token inválido ou expirado!"
-          })
+            error: "Token inválido ou expirado!",
+          });
         }
 
         await tokenModel.deleteToken(rfToken);
 
-        const {
-          iat, exp, ...userData
-        } = usuarioDecodificado;
+        const { iat, exp, ...userData } = usuarioDecodificado;
 
         const accessToken = generateTokens.generateAccessToken(userData);
         const newRefreshToken = generateTokens.generateRefreshToken(userData);
 
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        
+
         const savedToken = await tokenModel.createToken({
-          user_id: 
-        })
-      }
-    )
+          user_id: userData.id,
+          token: newRefreshToken,
+          expires_at: expiresAt,
+        });
+
+        if (savedToken.affectedRows === 0) {
+          return res.status(500).json({
+            error: "Erro ao cadastrar o token!",
+          });
+        }
+
+        res.cookie("refreshToken", newRefreshToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "strict",
+          maxAge: expiresAt,
+        });
+
+        return res.status(200).json({
+          success: "Sessão atualizada com sucesso!",
+          accessToken,
+        });
+      },
+    );
   }
 
   async logout(req, res) {
