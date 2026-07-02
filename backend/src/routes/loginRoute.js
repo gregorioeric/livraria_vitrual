@@ -1,10 +1,10 @@
 import express from "express";
-import authLoginContoller from "../controllers/authLoginContoller.js";
+import AuthLoginController from "../controllers/authLoginController.js";
 
 const loginRoute = express.Router();
 
-loginRoute.post("/login", authLoginContoller.login);
-loginRoute.post("/logout", authLoginContoller.logout);
-loginRoute.post("/refresh", authLoginContoller.refreshToken);
+loginRoute.post("/login", AuthLoginController.login);
+loginRoute.post("/logout", AuthLoginController.logout);
+loginRoute.post("/refresh", AuthLoginController.refreshToken);
 
 export default loginRoute;

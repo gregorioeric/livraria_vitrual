@@ -16,8 +16,14 @@ class UserModel {
   }
 
   async selectUserByEmail(email, id = 0) {
-    const query = `SELECT * FROM 
-        users WHERE user_email = ? AND user_id != ?;`;
+    // const query = `SELECT * FROM
+    //     users WHERE user_email = ? AND user_id != ?;`;
+
+    const query = `SELECT u.*, r.role_name 
+        FROM users u
+        LEFT JOIN roles r 
+        ON u.role_id = r.role_id
+        WHERE u.user_email = ? AND u.user_id != ?;`;
 
     const [row] = await pool.execute(query, [email, id]);
 

@@ -26,6 +26,19 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles (role_id)
 );
 
+CREATE TABLE endereco (
+    endereco_id INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    logradouro VARCHAR(255) NOT NULL,
+    numero VARCHAR(20) NOT NULL,
+    complemento VARCHAR(255),
+    bairro VARCHAR(255) NOT NULL,
+    cidade VARCHAR(255) NOT NULL,
+    estado VARCHAR(255) NOT NULL,
+    cep VARCHAR(20) NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES clientes (id_cliente) ON DELETE CASCADE
+);
+
 INSERT INTO
     roles (role_name)
 VALUES ("clientes"),

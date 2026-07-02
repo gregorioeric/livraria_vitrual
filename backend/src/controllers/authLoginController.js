@@ -63,7 +63,6 @@ class AuthLoginController {
 
   async refreshToken(req, res) {
     const rfToken = req.cookies.refreshToken;
-    console.log(req);
 
     if (!rfToken) {
       return res.status(401).json({
@@ -127,7 +126,6 @@ class AuthLoginController {
 
   async logout(req, res) {
     const refreshToken = req.cookies?.refreshToken;
-    console.log(req);
 
     const deleteToken = await tokenModel.deleteToken(refreshToken);
 
